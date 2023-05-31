@@ -63,7 +63,7 @@ namespace Application
     static const unsigned short APP_MIN_REV = 1;
     static const unsigned short APP_SUB_REV = 0;
 
-    static const unsigned char   DEVICE_ID = 0x5; //!< Potter Can Device ID
+    static const unsigned char   DEVICE_ID = 0x6; //!< Motors Can Device ID
 }
 
 

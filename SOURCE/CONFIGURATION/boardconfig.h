@@ -10,7 +10,7 @@ class boardConfig : public configFile
 
 
     #define REVISION     1  // This is the revision code
-    #define CONFIG_FILENAME     "C:\\OEM\\Gantry\\Config\\mcpu_potter.cnf" // This is the configuration file name and path
+    #define CONFIG_FILENAME     "C:\\OEM\\Gantry\\Config\\mcpu_motors.cnf" // This is the configuration file name and path
 
     // This section defines labels helping the param identification along the application
     #define PARAM_0   "PARAM_0"

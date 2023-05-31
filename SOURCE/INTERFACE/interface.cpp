@@ -9,7 +9,8 @@
  * - port: bounding port
  *
  */
-Interface::Interface(void):applicationInterface(SYSCONFIG->getParam<QString>(SYS_POTTER_PROCESS_PARAM,SYS_PROCESS_IP),SYSCONFIG->getParam<int>(SYS_POTTER_PROCESS_PARAM,SYS_PROCESS_PORT))
+Interface::Interface(void):applicationInterface(SYSCONFIG->getParam<QString>(SYS_MOTORS_PROCESS_PARAM,SYS_PROCESS_IP),
+                                                SYSCONFIG->getParam<int>(SYS_MOTORS_PROCESS_PARAM,SYS_PROCESS_PORT))
 {
 
 }
