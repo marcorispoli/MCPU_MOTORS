@@ -23,46 +23,9 @@ public:
     // Workflow handling
     typedef enum{
         _WORKFLOW_NONE = 0,
-        _WORKFLOW_BOOTINIT,
-        _WORKFLOW_APPINIT,
-        _WORKFLOW_IDLE,
-        _WORKFLOW_BOOTLOADER,
+
     }PROTOCOL_WORKFLOW_e;
 
-    void connectDevice(void){
-
-    }
-
-    typedef enum{
-        STATUS_SYSTEM = 0,        
-        STATUS_LEN
-    }PROTOCOL_STATUS_ENUM_e;
-
-    typedef enum{
-        DATA_OUTPUTS = 0,
-        DATA_LEN
-    }PROTOCOL_DATA_ENUM_e;
-
-    typedef enum{
-        POWER_ON_OFF_DELAY = 0,
-        PARAMETER_LEN
-    }PROTOCOL_PARAMS_ENUM_e;
-
-    typedef enum{
-        EXECUTE_ABORT = 0,
-        LAST_PROTOCOL_COMMAND
-    }PROTOCOL_COMMANDS_ENUM_e;
-
-    typedef enum{
-        ACTIVATE_BOOTLOADER = LAST_PROTOCOL_COMMAND,
-
-    }BOOTLOADERL_COMMANDS_ENUM_e;
-
-
-
-    // Protocol commands
-    inline void requestBootloaderActivation(void) {if(bootloaderPresent) execCmd = ACTIVATE_BOOTLOADER;}
-    inline void requestAbort(void){abortCmd = true;};
 
     inline canDeviceProtocolFrame::CAN_REGISTER_t getParam(uint8_t data){return deviceParamRegisters[data];};
     inline canDeviceProtocolFrame::CAN_REGISTER_t getData(uint8_t data){return deviceDataRegisters[data];};
@@ -82,10 +45,7 @@ public slots:
 
 private slots:
 
-    void workflowAPPINIT(void);
-    void workflowBOOTINIT(void);
-    void workflowIDLE(void);
-    void workflowBOOTLOADER(void);
+
 
 public:
     uchar execCmd;
@@ -101,7 +61,6 @@ private:
     uchar subWorkflow;
     uchar sequence;
     bool  rxOk;
-    bool bootloaderPresent;
 
 
 

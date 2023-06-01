@@ -36,9 +36,6 @@ SOURCES += \
     $${SHARED}/CAN_DEVICE_PROTOCOL/can_bootloader_protocol.cpp \
     $${TARGET_SOURCE}/INTERFACE/interface.cpp \
     $${TARGET_SOURCE}/PROTOCOL/device_protocol.cpp \
-    $${TARGET_SOURCE}/PROTOCOL/workflow_bootloader.cpp \
-    $${TARGET_SOURCE}/PROTOCOL/workflow_init.cpp \
-    $${TARGET_SOURCE}/PROTOCOL/workflow_idle.cpp \
     $${TARGET_SOURCE}/WINDOW/window.cpp \
 
 
