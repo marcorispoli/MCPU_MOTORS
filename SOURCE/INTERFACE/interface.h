@@ -62,17 +62,18 @@ public:
 
     uint handleReceivedCommand(QList<QString>* frame, QList<QString>* answer); //!< Reimplement the handler for the received Commmands
 
-    inline void EVENT_InitCompleted(void){sendEvent("EVENT_InitCompleted");}
+    #define COMMAND_GET_REVISION "GetRevision"
+    #define COMMAND_TRX_INITIALIZE "TrxInitialize"
+
+    #define EVENT_TRX_INIT_COMPLETED "EVENT_TRX_InitCompleted"
+    void EVENT_TrxInitCompleted(bool result);
 
 private slots:
 
 
 private:
-    uint GetStatus( QList<QString>* answer);
-    // Protocol Interface Events
-
-    // Protocol Interface commands
-    // uint GetStatus(QList<QString>* command, QList<QString>* answer); //!< Gantry requests the current device status
+    uint GetRevision( QList<QString>* answer);      //!< Returns the Application revision code
+    uint TrxInitialize( QList<QString>* answer);   //! Returns the Board initialization status and revision codes
 
 };
 

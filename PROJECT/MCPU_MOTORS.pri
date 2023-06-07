@@ -31,12 +31,20 @@ SOURCES += \
     $${SHARED}/APPLICATION_INTERFACE/applicationInterface.cpp \
     $${SHARED}/CAN_CLIENT/canclient.cpp \
     $${SHARED}/APPLOG/applog.cpp \
-    $${SHARED}/CONFIGFILE/configfile.cpp \
-    $${SHARED}/CAN_DEVICE_PROTOCOL/can_device_protocol.cpp \
-    $${SHARED}/CAN_DEVICE_PROTOCOL/can_bootloader_protocol.cpp \
-    $${TARGET_SOURCE}/INTERFACE/interface.cpp \
-    $${TARGET_SOURCE}/PROTOCOL/device_protocol.cpp \
+    $${SHARED}/CONFIGFILE/configfile.cpp \   
+    $${TARGET_SOURCE}/INTERFACE/interface.cpp \   
     $${TARGET_SOURCE}/WINDOW/window.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/cia_standard_proc.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/dictionary.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/nanoj.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_subroutines.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_positioning.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_zero_setting.cpp \
+     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_initialization.cpp \
+    $${TARGET_SOURCE}/DRIVER/TRX/trx.cpp \
+
+
 
 
 
@@ -45,14 +53,18 @@ HEADERS += \
     $${SHARED}/APPLICATION_INTERFACE/applicationInterface.h \
     $${SHARED}/CAN_CLIENT/canclient.h \
     $${SHARED}/APPLOG/applog.h \
-    $${SHARED}/CONFIGFILE/configfile.h \
     $${SHARED}/CONFIGFILE/sysconfig.h \
-    $${SHARED}/CAN_DEVICE_PROTOCOL/can_device_protocol.h \
-    $${SHARED}/CAN_DEVICE_PROTOCOL/can_bootloader_protocol.h \
-    $${TARGET_SOURCE}/INTERFACE/interface.h \
-    $${TARGET_SOURCE}/PROTOCOL/device_protocol.h \
+    $${SHARED}/CONFIGFILE/configfile.h \
+    $${TARGET_SOURCE}/INTERFACE/interface.h \    
     $${TARGET_SOURCE}/WINDOW/window.h \
     $${TARGET_SOURCE}/CONFIGURATION/boardconfig.h \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/dictionary.h \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4.h \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_dictionary.h \
+    $${TARGET_SOURCE}/DRIVER/TRX/trx.h \
+    $${TARGET_SOURCE}/DRIVER/TRX/nanoj_trx.h \
+
+
 
 
 # Aggiunge tutti i path di progetto
@@ -61,9 +73,11 @@ INCLUDEPATH += \
     $${SHARED}/CAN_CLIENT \
     $${SHARED}/APPLOG \
     $${SHARED}/CONFIGFILE \
-    $${SHARED}/CAN_DEVICE_PROTOCOL \
     $${TARGET_SOURCE} \
     $${TARGET_SOURCE}/INTERFACE \
     $${TARGET_SOURCE}/PROTOCOL \
     $${TARGET_SOURCE}/WINDOW  \
     $${TARGET_SOURCE}/CONFIGURATION  \
+    $${TARGET_SOURCE}/DRIVER \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC \
+    $${TARGET_SOURCE}/DRIVER/TRX \

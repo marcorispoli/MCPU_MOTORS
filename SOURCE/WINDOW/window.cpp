@@ -16,7 +16,7 @@ debugWindow::debugWindow(QWidget *parent)
     connect(ui->logClearButton, SIGNAL(pressed()), this, SLOT(onLogClearButton()), Qt::UniqueConnection);
     connect(ui->debugClearButton, SIGNAL(pressed()), this, SLOT(onDebugClearButton()), Qt::UniqueConnection);
     connect(ui->logEnableCheck, SIGNAL(stateChanged(int)), this, SLOT(on_logEnableCheck_stateChanged(int)));
-
+    connect(ui->initButton, SIGNAL(pressed()), this, SLOT(onInitButton()), Qt::UniqueConnection);
 
 
     pollingTimer  = startTimer(500);
@@ -72,16 +72,10 @@ void debugWindow::on_logEnableCheck_stateChanged(int arg1)
 
     if((arg1 == Qt::Checked) && (!connected)) {
         connected = true;
-        connect(PROTOCOL, SIGNAL( dataReceivedFromDeviceCan(ushort,QByteArray)), this, SLOT(rxFromCan(ushort,QByteArray)), Qt::QueuedConnection);
-        connect(PROTOCOL, SIGNAL( dataReceivedFromBootloaderCan(ushort,QByteArray)), this, SLOT(rxFromCan(ushort,QByteArray)), Qt::QueuedConnection);
-        connect(PROTOCOL, SIGNAL(txToDeviceCan(ushort,QByteArray )), this, SLOT(txToCan(ushort,QByteArray)), Qt::QueuedConnection);
-        connect(PROTOCOL, SIGNAL(txToBootloader(ushort,QByteArray )), this, SLOT(txToCan(ushort,QByteArray)), Qt::QueuedConnection);
+
     }else if((arg1 == Qt::Unchecked) && (connected)) {
         connected = false;
-        disconnect(PROTOCOL, SIGNAL( dataReceivedFromDeviceCan(ushort,QByteArray)), this, SLOT(rxFromCan(ushort,QByteArray)));
-        disconnect(PROTOCOL, SIGNAL( dataReceivedFromBootloaderCan(ushort,QByteArray)), this, SLOT(rxFromCan(ushort,QByteArray)));
-        disconnect(PROTOCOL, SIGNAL(txToDeviceCan(ushort,QByteArray )), this, SLOT(txToCan(ushort,QByteArray)));
-        disconnect(PROTOCOL, SIGNAL(txToBootloader(ushort,QByteArray )), this, SLOT(txToCan(ushort,QByteArray)));
+
     }
 }
 
@@ -129,9 +123,10 @@ void debugWindow::debugMessageHandler(QtMsgType type, QString msg){
 
 }
 
-void debugWindow::updateParameters(void){
+void debugWindow::onInitButton(void){
 
-
+    if(TRX->activateInitialization()) qDebug() << "INIT BUTTON ACCEPTED";
+    else qDebug() << "INIT BUTTON REJECTED";
 };
 
 void debugWindow::updateData(void){

@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
     // Open the server for the external commands
     INTERFACE = new Interface();
 
-    // Open the communication protocol
-    PROTOCOL = new deviceProtocol();
+    // Create the TRX motor driver baded on the Nanotec pd4 model
+    TRX = new trxModule();
 
     // Start communication with the Master
     INTERFACE->Start();

@@ -33,12 +33,13 @@ public:
     QLabel *label_16;
     QCheckBox *debugEnable;
     QLabel *label_17;
+    QPushButton *initButton;
 
     void setupUi(QWidget *debugWindow)
     {
         if (debugWindow->objectName().isEmpty())
             debugWindow->setObjectName(QString::fromUtf8("debugWindow"));
-        debugWindow->resize(389, 600);
+        debugWindow->resize(540, 600);
         debugWindow->setStyleSheet(QString::fromUtf8("\n"
 "background-color: rgb(85, 170, 255);"));
         mainFrame = new QFrame(debugWindow);
@@ -122,6 +123,14 @@ public:
 "border-width: 0px;\n"
 ""));
         label_17->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        initButton = new QPushButton(mainFrame);
+        initButton->setObjectName(QString::fromUtf8("initButton"));
+        initButton->setGeometry(QRect(400, 40, 121, 31));
+        initButton->setFont(font2);
+        initButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+"color: rgb(255, 255, 255);\n"
+"border-width: 0px;\n"
+""));
 
         retranslateUi(debugWindow);
 
@@ -141,6 +150,7 @@ public:
         label_16->setText(QCoreApplication::translate("debugWindow", "DEBUG TEXT", nullptr));
         debugEnable->setText(QCoreApplication::translate("debugWindow", "ENABLE", nullptr));
         label_17->setText(QCoreApplication::translate("debugWindow", "CAN FRAMES", nullptr));
+        initButton->setText(QCoreApplication::translate("debugWindow", "INITIALIZE", nullptr));
     } // retranslateUi
 
 };

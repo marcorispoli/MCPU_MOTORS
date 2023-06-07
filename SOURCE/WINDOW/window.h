@@ -24,8 +24,9 @@ public:
     static void debugMessageHandler(QtMsgType type, QString msg); //!< Handles the debug messages in case of -win Application
     inline static debugWindow* instance = nullptr; //!< Assigned to the unique instance of the class
 
+public slots:
 
-    void updateParameters(void);
+    void onInitButton(void);
     void updateData(void);
     void updateStatus(void);
 

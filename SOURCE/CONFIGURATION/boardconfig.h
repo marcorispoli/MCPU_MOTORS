@@ -13,7 +13,8 @@ class boardConfig : public configFile
     #define CONFIG_FILENAME     "C:\\OEM\\Gantry\\Config\\mcpu_motors.cnf" // This is the configuration file name and path
 
     // This section defines labels helping the param identification along the application
-    #define PARAM_0   "PARAM_0"
+    #define TRX_CANID   "TRX_CANID"
+    #define SLIDE_CANID  "SLIDE_CANID"
 
 
     // your class constructor
@@ -21,7 +22,8 @@ class boardConfig : public configFile
         {
             CONFIG_FILENAME, REVISION,
             {{
-                { PARAM_0,     {{ "40" }},  "Delay from Power On Off events (0.1s) "},
+                { TRX_CANID,     {{ "3" }},  "TRX Motor Address"},
+                { SLIDE_CANID,   {{ "4" }},  "TRX Motor Address"},
 
             }}
         })

@@ -63,7 +63,6 @@ namespace Application
     static const unsigned short APP_MIN_REV = 1;
     static const unsigned short APP_SUB_REV = 0;
 
-    static const unsigned char   DEVICE_ID = 0x6; //!< Motors Can Device ID
 }
 
 
@@ -74,32 +73,31 @@ namespace Application
 #include "canclient.h"
 #include "window.h"
 #include "interface.h"
-#include "can_device_protocol.h"
-#include "device_protocol.h"
 #include "boardconfig.h"
 #include "sysconfig.h"
+#include "trx.h"
 
 #define WINDOW          window
 #define INTERFACE       pInterface
 #define DEBUG           window
-#define PROTOCOL        pProtocol
 #define CONFIG          pConfig
 #define SYSCONFIG       pSysConfig
+#define TRX             pTrx
 
 // Global definitions
 #ifdef MAIN_CPP
      debugWindow*                WINDOW;
-     Interface*                  INTERFACE;
-     deviceProtocol*             PROTOCOL;
+     Interface*                  INTERFACE;     
      boardConfig*                CONFIG;
      sysConfig*                  SYSCONFIG;
+     trxModule*                  TRX;
 
 #else
     extern debugWindow*                WINDOW;
-    extern Interface*                  INTERFACE;
-    extern deviceProtocol*             PROTOCOL;
+    extern Interface*                  INTERFACE;    
     extern boardConfig*                CONFIG;
     extern sysConfig*                  SYSCONFIG;
+    extern trxModule*                  TRX;
 #endif
 
 #ifdef TIME_MEASURE
