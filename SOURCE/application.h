@@ -76,6 +76,10 @@ namespace Application
 #include "boardconfig.h"
 #include "sysconfig.h"
 #include "trx.h"
+#include "slide.h"
+#include "carm.h"
+#include "body.h"
+#include "mvert.h"
 
 #define WINDOW          window
 #define INTERFACE       pInterface
@@ -83,6 +87,10 @@ namespace Application
 #define CONFIG          pConfig
 #define SYSCONFIG       pSysConfig
 #define TRX             pTrx
+#define SLIDE           pSlide
+#define CARM            pCarm
+#define BODY            pBody
+#define MVERT           pMvert
 
 // Global definitions
 #ifdef MAIN_CPP
@@ -91,6 +99,10 @@ namespace Application
      boardConfig*                CONFIG;
      sysConfig*                  SYSCONFIG;
      trxModule*                  TRX;
+     slideModule*                SLIDE;
+     carmModule*                 CARM;
+     bodyModule*                 BODY;
+     mvertModule*                MVERT;
 
 #else
     extern debugWindow*                WINDOW;
@@ -98,6 +110,10 @@ namespace Application
     extern boardConfig*                CONFIG;
     extern sysConfig*                  SYSCONFIG;
     extern trxModule*                  TRX;
+    extern slideModule*                SLIDE;
+    extern carmModule*                 CARM;
+    extern bodyModule*                 BODY;
+    extern mvertModule*                MVERT;
 #endif
 
 #ifdef TIME_MEASURE

@@ -56,9 +56,9 @@ ushort pd4Nanotec::initPd4PositioningCommand(void){
     static bool success;
     static uint ctrlw;
 
-    switch(wStatus){
+    switch(cia_steps){
     case 0:
-        wStatus++;        
+        cia_steps++;
         return 1;
 
     case 1:
@@ -68,43 +68,43 @@ ushort pd4Nanotec::initPd4PositioningCommand(void){
 
       if(!success){
           qDebug() << "DEVICE (" << deviceId << "): POSITIONING SETTING FAILED!";
-          wStatus = 200;
+          cia_steps = 200;
           return 1;
       }
 
-      wStatus++;
+      cia_steps++;
       return 1;
 
     case 2:
         // Upload Operating mode
         writeSDO(OD_6060_00,OD_6060_00_PROFILE_POSITIONING);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 3:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
-        wStatus++;
+        cia_steps++;
         return  1;
 
     case 4: // Read the Control Word
         readSDO(OD_6040_00);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 5: // Get the control word
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR READING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 6:
@@ -113,13 +113,13 @@ ushort pd4Nanotec::initPd4PositioningCommand(void){
         ctrlw &=~ OD_MASK(POSITION_SETTING_CTRL_INIT);
         ctrlw |= OD_VAL(POSITION_SETTING_CTRL_INIT);
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 7:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
@@ -130,42 +130,42 @@ ushort pd4Nanotec::initPd4PositioningCommand(void){
         ctrlw &=~ OD_MASK(POSITION_SETTING_CTRL_INIT);
         ctrlw |= OD_VAL(POSITION_SETTING_CTRL_INIT);
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
    case 8:
         // Attivazione delle operazioni   
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 9:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
         // Nanoj activation if required
         if(!positioningStr.nanoj_start) return 0;
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 10:
         readSDO(OD_2301_00); // Read the Nanoj Status register
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 11:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR READING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
         if(sdoRxTx.rxSDO.getVal() & 0x4 ){
              qDebug() << QString("DEVICE (%1): ERROR RUNNING THE NANOJ  PROGRAM").arg(deviceId);
-             wStatus = 200;
+             cia_steps = 200;
              return 1;
         }
 
@@ -204,20 +204,20 @@ ushort pd4Nanotec::pd4PositioningLoop(){
     }
 
 
-    switch(wStatus){
+    switch(cia_steps){
         case 0:
             if(positioningStr.nanoj_start){
                 qDebug() << QString("DEVICE (%1): POSITIONING SETTING WITH NANOJ STARTED").arg(deviceId);
-                wStatus =5;
+                cia_steps =5;
             }else{
                 qDebug() << QString("DEVICE (%1): POSITIONING SETTING STARTED").arg(deviceId);
-                wStatus++;
+                cia_steps++;
             }
             return 1;
 
         case 1:// Read the Control Word
             readSDO(OD_6040_00);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 2: // Get the control word
@@ -225,7 +225,7 @@ ushort pd4Nanotec::pd4PositioningLoop(){
                 qDebug() << QString("DEVICE (%1): ERROR READING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
                 return 0;
             }            
-            wStatus++;
+            cia_steps++;
             return 1;
 
         case 3: // Set the BIT4 of Control Word to start the sequence
@@ -233,7 +233,7 @@ ushort pd4Nanotec::pd4PositioningLoop(){
             ctrlw &=~ OD_MASK(POSITION_SETTING_START);
             ctrlw |= OD_VAL(POSITION_SETTING_START);
             writeSDO(OD_6040_00, ctrlw);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 4:
@@ -242,19 +242,19 @@ ushort pd4Nanotec::pd4PositioningLoop(){
                 return 0;
             }
 
-            wStatus++;
+            cia_steps++;
             return 1;
 
         case 5: // Positioning Cycle loop ------------------------------------------------------------------
 
             delay = subReadPositionEncoder();// Read the Encoder position
             if(delay) return delay;
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 6:// Read the Status Word to detect the command completion
             readSDO(OD_6041_00);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 7:
@@ -279,7 +279,7 @@ ushort pd4Nanotec::pd4PositioningLoop(){
             }
 
             // Repeats the status read until the following conditions are met.
-            wStatus=5;            
+            cia_steps=5;
             return 100;
 
 

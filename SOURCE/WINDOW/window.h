@@ -26,7 +26,13 @@ public:
 
 public slots:
 
-    void onInitButton(void);
+    void onTrxInitButton(void);
+    void onSlideInitButton(void);
+    void onBodyInitButton(void);
+    void onCarmInitButton(void);
+    void onMvertInitButton(void);
+
+
     void updateData(void);
     void updateStatus(void);
 

@@ -18,19 +18,19 @@ ushort pd4Nanotec::CiA402_SwitchOnDisabledCallback(void){
 
     uint ctrlw;
 
-    switch(wStatus){
+    switch(cia_steps){
 
     case 0: // Read the Control Word
-        wStatus++;
+        cia_steps++;
 
     case 1:
          readSDO(OD_6040_00);
-         wStatus++;
+         cia_steps++;
          return 5;
 
     case 2: // Get the control word
         if(!sdoRxTx.sdo_rx_ok) return 0;
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 3:
@@ -39,7 +39,7 @@ ushort pd4Nanotec::CiA402_SwitchOnDisabledCallback(void){
         ctrlw &=~ OD_MASK(OD_6040_00_SHUTDOWN);
         ctrlw |= OD_VAL(OD_6040_00_SHUTDOWN);
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     default:
@@ -61,19 +61,19 @@ ushort pd4Nanotec::CiA402_SwitchOnDisabledCallback(void){
 ushort pd4Nanotec::CiA402_ReadyToSwitchOnCallback(void){
     uint ctrlw;
 
-    switch(wStatus){
+    switch(cia_steps){
 
     case 0: // Read the Control Word
-        wStatus++;
+        cia_steps++;
 
     case 1:
          readSDO(OD_6040_00);
-         wStatus++;
+         cia_steps++;
          return 5;
 
     case 2: // Get the control word
         if(!sdoRxTx.sdo_rx_ok) return 0;
-        wStatus++;       
+        cia_steps++;
         return 1;
 
     case 3:
@@ -82,7 +82,7 @@ ushort pd4Nanotec::CiA402_ReadyToSwitchOnCallback(void){
         ctrlw &=~ OD_MASK(OD_6040_00_SWITCHON);
         ctrlw |= OD_VAL(OD_6040_00_SWITCHON);
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     default:
@@ -103,14 +103,14 @@ ushort pd4Nanotec::CiA402_FaultCallback(void){
     static uint ctrlw;
     uint uval;
 
-    switch(wStatus){
+    switch(cia_steps){
     case 0:
-        wStatus++;
+        cia_steps++;
 
     case 1:
         // Get the error class
         readSDO(OD_1001_00);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 2:
@@ -121,19 +121,19 @@ ushort pd4Nanotec::CiA402_FaultCallback(void){
             err_code = 0;
 
             // Try to exit from the Fault status
-            wStatus = 100;
+            cia_steps = 100;
             return 1;
         }
 
         if(uval != err_class) qDebug() << "DEVICE (" << deviceId << ") ERROR CLASS:" <<  getErrorClass1001(uval);
         err_class = uval;
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 3:
         // Get the error code
         readSDO(OD_1003_01);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 4:
@@ -141,39 +141,39 @@ ushort pd4Nanotec::CiA402_FaultCallback(void){
         uval = sdoRxTx.rxSDO.getVal();
         if(uval != err_code) qDebug() << "DEVICE (" << deviceId << ") ERROR CODE:" << getErrorCode1003(uval);
         err_code = uval;
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 5:
-        wStatus = 1;
+        cia_steps = 1;
         return 500;
 
    case 100:
         readSDO(OD_6040_00);
-        wStatus++;
+        cia_steps++;
         return 5;
 
    case 101:
         if(!sdoRxTx.sdo_rx_ok) return 0;
-        wStatus++;
+        cia_steps++;
         ctrlw = sdoRxTx.rxSDO.getVal();
         ctrlw |= 0x80;
         return 1;
 
    case 102:
         writeSDO(OD_6040_00,ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 103:
         if(!sdoRxTx.sdo_rx_ok) return 0;
-        wStatus++;
+        cia_steps++;
         ctrlw &=~ 0x80;
         return 1;
 
     case 104:
         writeSDO(OD_6040_00,ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 105:
@@ -215,11 +215,11 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
     uint val;
     ushort delay;
 
-    switch(wStatus){
+    switch(cia_steps){
 
     case 200:// Read the Control Word
         readSDO(OD_6040_00);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 201: // Get the control word
@@ -228,7 +228,7 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
             return 0;
         }
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 202: // reset the BIT4 of Control Word to start the sequence
@@ -236,7 +236,7 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
         val &=~ OD_MASK(OD_6040_00_RESET_OMS);
         val |= OD_VAL(OD_6040_00_RESET_OMS);
         writeSDO(OD_6040_00, val);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 203:
@@ -245,15 +245,15 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
             return 0;
         }
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 204: // Read the Control Word
-        wStatus++;
+        cia_steps++;
 
     case 205:
         readSDO(OD_6040_00);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 206: // Get the control word
@@ -262,7 +262,7 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
             qDebug() << "DEVICE (" << deviceId << "): COMMAND FAILED";
             return 0;
         }
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 207:
@@ -271,7 +271,7 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
         val &=~ OD_MASK(OD_6040_00_DISABLEOP);
         val |= OD_VAL(OD_6040_00_DISABLEOP);
         writeSDO(OD_6040_00, val);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 208:
@@ -281,14 +281,14 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
             return 0;
         }
 
-        wStatus++;
+        cia_steps++;
         return 100;
 
     case 209:
         delay = subDisableNanojProgram();
         if(delay) return delay;
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 210:
@@ -308,7 +308,7 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
         // Command termination
         if(delay == 0){
             execCommand = _NO_COMMAND;
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
         return delay;
@@ -320,9 +320,9 @@ ushort pd4Nanotec::CiA402_OperationEnabledCallback(void){
 ushort pd4Nanotec::workflowUploadNanoj(void){
     ushort delay;
 
-    switch(wStatus){
+    switch(cia_steps){
       case 0:
-        wStatus++;
+        cia_steps++;
         return 1;
 
       case 1:

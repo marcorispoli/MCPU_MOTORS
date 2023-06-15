@@ -1,11 +1,10 @@
 #include "application.h"
 
 
-canClient* pd4Nanotec::pCan = nullptr;
-
 pd4Nanotec::pd4Nanotec(uchar ID)
 {
-    if(pCan == nullptr) pCan = new canClient(0xF80, 0x580,SYSCONFIG->getParam<QString>(SYS_CAN_PROCESS_PARAM, SYS_PROCESS_IP) , SYSCONFIG->getParam<uint>(SYS_CAN_PROCESS_PARAM, SYS_PROCESS_PORT));
+    // Connect to the Can Driver server with the SDO reception address
+    pCan = new canClient(0x580 + ID,SYSCONFIG->getParam<QString>(SYS_CAN_PROCESS_PARAM, SYS_PROCESS_IP) , SYSCONFIG->getParam<uint>(SYS_CAN_PROCESS_PARAM, SYS_PROCESS_PORT));
     deviceId = ID;
     ready = false;
 
@@ -15,39 +14,49 @@ pd4Nanotec::pd4Nanotec(uchar ID)
     connect(this,SIGNAL(txToCan(ushort , QByteArray )), pCan,SLOT(txToCanData(ushort , QByteArray )), Qt::QueuedConnection);
     pCan->ConnectToCanServer();
 
-    // invalidate the status of the digital input
-    digital_input_valid = false;
-
-    // Safety Input Mask closed
-    setSafetyDigitalInput(0,0);
-
+    // Register Vector pointers initialization
     registerVectors.configVector = nullptr;
     registerVectors.runtimeVector =nullptr;
     registerVectors.zeroSettingVector = nullptr;
 
+    // Nanoj Data Initialization
+    nanojStr.vector = nullptr;
+    nanojStr.sizeofNanoj = 0;
+    nanojStr.nanoj_program_started = false;
+    nanojStr.rxblock = false;
 
-
-    execCommand = _NO_COMMAND;
-    CiAcurrentStatus = CiA402_Undefined;
-    zero_setting_ok = false;
-
-    positioningStr.target_ok = false;
-    nanojStr.nanoj_program_started = true;
-    uploadNanojRequest = false;
-
-    enableDeviceInitialization = false;
-
-
-
-    device_workflow = _WORKFLOW_NOT_CONNECTED;
-    workflowFase = 0;
-    deviceInitialized = false;
-
+    // Can Communication data initialization
     sdoRxTx.sdo_rx_tx_pending = false;
-    sdoRxTx.sdo_rx_ok = true;
+    sdoRxTx.sdo_rx_ok = false;
     sdoRxTx.sdo_rxtx_completed = true;
     sdoRxTx.sdo_attempt = 0;
     sdoRxTx.tmo_attempt = 100;
+
+    // Workflows Initialization
+    device_workflow = _WORKFLOW_NOT_CONNECTED;
+    workflow_steps = 0;
+    cia_steps = 0;
+    qDebug() << "DEVICE (" << deviceId << ") SET THE NON CONNECTED STATUS ";
+
+    // Driver Status
+    deviceInitialized = false;
+    nanojUploaded = false;
+    uploadNanojRequest = false;
+    request_initialization = false;
+    deviceInitialized = false;
+
+    // Cia Status initialization
+    CiAcurrentStatus = CiA402_Undefined;
+
+    // Motor Feature
+    execCommand = _NO_COMMAND;
+    zero_setting_ok = false;
+    positioningStr.target_ok = false;
+    setSafetyDigitalInput(0,0);
+    digital_input_valid = false;
+
+
+    // Starts the Workflow status handler
     QTimer::singleShot(1000,this, SLOT(statusHandler()));
 }
 pd4Nanotec::~pd4Nanotec()
@@ -56,20 +65,24 @@ pd4Nanotec::~pd4Nanotec()
 }
 
 
+void pd4Nanotec::rxFromCan(ushort canId, QByteArray data){
 
-
-void pd4Nanotec::rxFromCan(ushort devId, QByteArray data){
-
-    if((devId - 0x580) != deviceId) return; // Invalid ID
+    if((canId) != deviceId + 0x580) return; // Invalid ID
     sdoRxTx.sdo_rxtx_completed = true;
 
+    // Verifies if the incoming frame is a nanoj block
     if(nanojStr.rxblock){
-          if( data.at(0) != ((nanojStr.txBlock.at(0)& 0xF0) | 0x20) ){
-              //qDebug() << QString("errore:%1 atteso:%2").arg((uchar) data.at(0),1,16).arg((uchar)(nanojStr.txBlock.at(0) | 0x20),1,16);
-              return;
-          }
-          sdoRxTx.sdo_rx_ok = true;
-          return;
+        if(nanojStr.sizeofNanoj){
+            nanojStr.rxblock = false;
+            sdoRxTx.sdo_rx_ok = true;
+            qDebug() << "INVALID NANOJ BLOCK DATA RECEPTION!";
+            return;
+        }
+        if( data.at(0) != ((nanojStr.txBlock.at(0)& 0xF0) | 0x20) ){
+            return;
+        }
+        sdoRxTx.sdo_rx_ok = true;
+        return;
     }
 
 
@@ -192,6 +205,7 @@ void pd4Nanotec::sendAgainSDO(void){
 
 
 
+
 void pd4Nanotec::statusHandler(void){
     ushort delay;
 
@@ -223,7 +237,9 @@ void pd4Nanotec::statusHandler(void){
     sdoRxTx.sdo_rx_tx_pending = false;
     sdoRxTx.tmo_attempt = 100; // ms of waiting the reception
 
-    switch(device_workflow){
+    // Workflow main management
+    switch((_device_workflow_t) device_workflow){
+
         case  _WORKFLOW_NOT_CONNECTED: // Wait for the CAN-CLIENT READY CONDITION
             deviceInitialized = false;
             if((!pCan) ||(!pCan->isCanReady())){
@@ -233,11 +249,12 @@ void pd4Nanotec::statusHandler(void){
 
             // The CAN driver has been connected and registered
             device_workflow = _WORKFLOW_WAIT_INITIALIZATION;
+            qDebug() << "DEVICE (" << deviceId << ") SET THE WAIT INITIALIZATION ";
             request_initialization = false;
             QTimer::singleShot(100,this, SLOT(statusHandler()));
             return;
 
-        case  _WORKFLOW_WAIT_INITIALIZATION:
+        case  _WORKFLOW_WAIT_INITIALIZATION: // Wait the request to initialize the Motor
             if(request_initialization){
                 device_workflow = _WORKFLOW_INITIALIZATION;
                 request_initialization = false;
@@ -246,7 +263,7 @@ void pd4Nanotec::statusHandler(void){
             QTimer::singleShot(100,this, SLOT(statusHandler()));
             return;
 
-        case  _WORKFLOW_INITIALIZATION:
+        case  _WORKFLOW_INITIALIZATION: // Motor initialization Workflow
             delay = workflowInitializeHandler();
             if(delay){
                 QTimer::singleShot(delay,this, SLOT(statusHandler()));
@@ -254,9 +271,11 @@ void pd4Nanotec::statusHandler(void){
             }
 
             if(deviceInitialized){
+                // If the device is initialized can init the IDLE status
                 device_workflow = _WORKFLOW_IDLE;
                 qDebug() << "DEVICE (" << deviceId << ") SET THE IDLE ";
             }else{
+                // If the Initialization should fail, the device return into the Wait Initialization
                 device_workflow = _WORKFLOW_WAIT_INITIALIZATION;
                 qDebug() << "DEVICE (" << deviceId << ") SET THE WAIT INITIALIZATION ";
 
@@ -728,10 +747,7 @@ uchar pd4Nanotec::getDigitalInputs(void){
     return (uchar) digital_input_val;
 }
 
-void pd4Nanotec::enableConfiguration(void){
-    enableDeviceInitialization = true;
 
-}
 
 void pd4Nanotec::immediateStop(void){
     safety.immediate_stop_command = true;

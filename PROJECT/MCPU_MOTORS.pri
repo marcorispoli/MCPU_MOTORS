@@ -41,9 +41,12 @@ SOURCES += \
     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_subroutines.cpp \
     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_positioning.cpp \
     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_zero_setting.cpp \
-     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_initialization.cpp \
+    $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_initialization.cpp \
     $${TARGET_SOURCE}/DRIVER/TRX/trx.cpp \
-
+    $${TARGET_SOURCE}/DRIVER/SLIDE/slide.cpp \
+    $${TARGET_SOURCE}/DRIVER/CARM/carm.cpp \
+    $${TARGET_SOURCE}/DRIVER/BODY/body.cpp \
+    $${TARGET_SOURCE}/DRIVER/MVERT/mvert.cpp \
 
 
 
@@ -55,6 +58,7 @@ HEADERS += \
     $${SHARED}/APPLOG/applog.h \
     $${SHARED}/CONFIGFILE/sysconfig.h \
     $${SHARED}/CONFIGFILE/configfile.h \
+    $${SHARED}/ERRORS/syserr.h \
     $${TARGET_SOURCE}/INTERFACE/interface.h \    
     $${TARGET_SOURCE}/WINDOW/window.h \
     $${TARGET_SOURCE}/CONFIGURATION/boardconfig.h \
@@ -63,6 +67,10 @@ HEADERS += \
     $${TARGET_SOURCE}/DRIVER/NANOTEC/pd4_dictionary.h \
     $${TARGET_SOURCE}/DRIVER/TRX/trx.h \
     $${TARGET_SOURCE}/DRIVER/TRX/nanoj_trx.h \
+    $${TARGET_SOURCE}/DRIVER/SLIDE/slide.h \
+    $${TARGET_SOURCE}/DRIVER/CARM/carm.h \
+    $${TARGET_SOURCE}/DRIVER/BODY/body.h \
+    $${TARGET_SOURCE}/DRIVER/MVERT/mvert.h \
 
 
 
@@ -73,6 +81,7 @@ INCLUDEPATH += \
     $${SHARED}/CAN_CLIENT \
     $${SHARED}/APPLOG \
     $${SHARED}/CONFIGFILE \
+    $${SHARED}/ERRORS \
     $${TARGET_SOURCE} \
     $${TARGET_SOURCE}/INTERFACE \
     $${TARGET_SOURCE}/PROTOCOL \
@@ -81,3 +90,7 @@ INCLUDEPATH += \
     $${TARGET_SOURCE}/DRIVER \
     $${TARGET_SOURCE}/DRIVER/NANOTEC \
     $${TARGET_SOURCE}/DRIVER/TRX \
+    $${TARGET_SOURCE}/DRIVER/SLIDE \
+    $${TARGET_SOURCE}/DRIVER/CARM \
+    $${TARGET_SOURCE}/DRIVER/BODY \
+    $${TARGET_SOURCE}/DRIVER/MVERT \

@@ -62,18 +62,35 @@ public:
 
     uint handleReceivedCommand(QList<QString>* frame, QList<QString>* answer); //!< Reimplement the handler for the received Commmands
 
-    #define COMMAND_GET_REVISION "GetRevision"
-    #define COMMAND_TRX_INITIALIZE "TrxInitialize"
 
     #define EVENT_TRX_INIT_COMPLETED "EVENT_TRX_InitCompleted"
     void EVENT_TrxInitCompleted(bool result);
+    #define EVENT_SLIDE_INIT_COMPLETED "EVENT_SLIDE_InitCompleted"
+    void EVENT_SlideInitCompleted(bool result);
+    #define EVENT_CARM_INIT_COMPLETED "EVENT_CARM_InitCompleted"
+    void EVENT_CarmInitCompleted(bool result);
+    #define EVENT_BODY_INIT_COMPLETED "EVENT_BODY_InitCompleted"
+    void EVENT_BodyInitCompleted(bool result);
+    #define EVENT_MVERT_INIT_COMPLETED "EVENT_MVERT_InitCompleted"
+    void EVENT_MvertInitCompleted(bool result);
+
 
 private slots:
 
 
 private:
-    uint GetRevision( QList<QString>* answer);      //!< Returns the Application revision code
-    uint TrxInitialize( QList<QString>* answer);   //! Returns the Board initialization status and revision codes
+    typedef uint (Interface::*funcPtr)(QList<QString>*);
+    QMap<QString, funcPtr> interfaceCommands;
+
+    // List of the available Interface commands
+    uint interfaceNotRecognizedCommand( QList<QString>* answer);
+    uint GetRevision( QList<QString>* answer);      //!< Command Revision request handling
+    uint TrxInitialize( QList<QString>* answer);    //!< Command TRX Initialize handling
+    uint SlideInitialize( QList<QString>* answer);  //!< Command SLIDE Initialize handling
+    uint CarmInitialize( QList<QString>* answer);  //!< Command CARM Initialize handling
+    uint BodyInitialize( QList<QString>* answer);  //!< Command BODY Initialize handling
+    uint MvertInitialize( QList<QString>* answer);  //!< Command MVert Initialize handling
+
 
 };
 

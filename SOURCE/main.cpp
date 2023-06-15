@@ -25,10 +25,15 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     appLog(argc, argv, "C:\\OEM\\Gantry\\Log\\mcpu_motors.log", debugWindow::debugMessageHandler);
 
+    // Open the system configuration file
+    SYSCONFIG = new sysConfig(configFile::_CFG_READONLY);
+    if(!SYSCONFIG->isFormatCorrect()) {
+        qDebug() << " WRONG CONFIGURATION FILE FORMAT!";
+        exit(1);
+    }
 
     // Open the application config file
     CONFIG = new boardConfig();
-    SYSCONFIG = new sysConfig();
 
     // Initialize the WINDOW to nullptr so that in case of Operating mode
     // the application skips the WINDOW callbacks
@@ -45,6 +50,18 @@ int main(int argc, char *argv[])
 
     // Create the TRX motor driver baded on the Nanotec pd4 model
     TRX = new trxModule();
+
+    // Create the SLIDE motor driver baded on the Nanotec pd4 model
+    SLIDE = new slideModule();
+
+    // Create the C-ARM motor driver baded on the Nanotec pd4 model
+    CARM = new carmModule();
+
+    // Create the BODY motor driver baded on the Nanotec pd4 model
+    BODY = new bodyModule();
+
+    // Create the Vertical motor driver baded on the Nanotec pd4 model
+    MVERT = new mvertModule();
 
     // Start communication with the Master
     INTERFACE->Start();

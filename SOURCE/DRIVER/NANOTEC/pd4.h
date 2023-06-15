@@ -205,7 +205,7 @@ protected:
     int   convert_cGRAD_TO_EncoderUnit(float x);
     int   convert_EncoderUnit_TO_cGRAD(float x);
 
-    void enableConfiguration(void);
+
     bool activateZeroSetting(void);
     bool activatePositioning(int cAngle, uint cAcc, uint cDec, uint cSpeed, bool nanoj_start);
 
@@ -214,8 +214,6 @@ protected:
     void uploadNanojProgram(void);
 
 
-    // Device status flags
-    bool deviceInitialized; //!< Flag of a correected initialization process
 
 
     void writeSDO(ushort index, uchar sub, canOpenDictionary::_ODDataType type, uint val);
@@ -230,24 +228,19 @@ protected:
 
 
 private:
-    static canClient* pCan; //!< Pointer to the CAN driver server
-    uchar   deviceId; //!< Target Can device ID
-    clock_t  t1; //!> Time performance measurement variable
+    canClient*  pCan; //!< Pointer to the CAN driver server
+    uchar       deviceId; //!< Target Can device ID
 
-/////////////////////////////////////////////////////////////////
-    ushort workflowStatus; //!> Workflow status index
-    ushort wStatus; //!> Callback status index
-////////////////////////////////////////////////////////////////
-
-
-
-    bool ready; //!< The Can Driver is ready to receive data
-    bool zero_setting_ok;//!< Flag of the zero setting completed
-    bool enableDeviceInitialization; //!< Enable the initialization process
-
-
-    bool nanojUploaded;
-    bool uploadNanojRequest;
+    struct {
+        bool sdo_rx_tx_pending;     //! The Workflow is waiting for a rxtx transaction completion
+        bool sdo_rxtx_completed;    //! The SDO transaction  has been completed (successfuffly or with error)
+        bool sdo_rx_ok;             //! The SDO has been received in a correct format
+        uchar sdo_attempt;          //!< Current Rx/Tx attempt number
+        uchar tmo_attempt;          //!< Number of attempts without reception
+        canOpenDictionary rxSDO;    //!< Received SDO
+        canOpenDictionary txSDO;    //!< SDO to be transmetted
+    }sdoRxTx; //!< Data structure controlling the Send and Reception process
+    bool   ready; //!< The Can Driver is ready to receive data
 
     struct{
         _OD_InitVector* configVector;
@@ -256,17 +249,31 @@ private:
     }registerVectors;
 
     struct{
-        float gearratio;
-        float speed_denominator;
-    }motorConfig;
-
+        bool    rxblock;               //! The next reception is a block type
+        QByteArray txBlock;            //! < Tx data block sent
+        QByteArray rxBlock;            //! < Rx data block sent
+        uint    vector_index;          //! Index of the current data to be written in the nanoj memory
+        uint    num_block_items;       //! Counter of the total item currently in the block (max 1024)
+        uchar*   vector;
+        uint    sizeofNanoj;
+        bool    nanoj_program_started; //!< The Nanoj program has been activated
+    } nanojStr;
 
     typedef enum{
-        _NO_COMMAND=0,
-        _ZERO_SETTING_COMMAND,
-        _POSITIONING_COMMAND,
-    } _executionCommands;
-    _executionCommands execCommand;
+        _WORKFLOW_NOT_CONNECTED = 0,
+        _WORKFLOW_WAIT_INITIALIZATION,
+        _WORKFLOW_INITIALIZATION,
+        _WORKFLOW_IDLE,
+
+    } _device_workflow_t;
+    ushort  device_workflow;    //!< Current active workflow
+    ushort  workflow_steps;     //!< Current fase of the active workflow
+    ushort  cia_steps;          //!< Current fase in the Cia Management
+    bool    nanojUploaded;
+    bool    uploadNanojRequest;
+    bool    request_initialization;
+    bool    deviceInitialized; //!< Flag of a correected initialization process
+
 
     typedef enum{
         CiA402_NotReadyToSwitchOn = 0,
@@ -280,59 +287,15 @@ private:
         CiA402_Undefined,
     }_CiA402Status;
 
-    _CiA402Status getCiAStatus(canOpenDictionary* od);
-    QString getCiAStatusString(_CiA402Status status);
-
-
-
-    typedef enum{
-        _WORKFLOW_NOT_CONNECTED = 0,
-        _WORKFLOW_WAIT_INITIALIZATION,
-        _WORKFLOW_INITIALIZATION,
-        _WORKFLOW_IDLE,
-
-    } _device_workflow_t;
-    _device_workflow_t     device_workflow; //!< Current active workflow
-    uint workflowFase;
-
-    bool request_initialization;
+    _CiA402Status CiAcurrentStatus;     //!< CiA current detected status
 
 
     typedef enum{
-        _DEVICE_NOT_CONNECTED = 0,
-        _DEVICE_STOP_MODE,
-        _DEVICE_INIT,
-        _UPLOAD_NANOJ,
-        _HANDLE_DEVICE_STATUS,
-    } _workflowType;
-
-
-   // _workflowType workflow; //!< Main workflow routine control word
-    _CiA402Status CiAcurrentStatus; //!< CiA current detected status
-
-    /// This structure handle the variables to control the Send/Receive process
-    struct {
-        bool sdo_rx_tx_pending;     //! The Workflow is waiting for a rxtx transaction completion
-        bool sdo_rxtx_completed;    //! The SDO transaction  has been completed (successfuffly or with error)
-        bool sdo_rx_ok;             //! The SDO has been received in a correct format
-        uchar sdo_attempt;          //!< Current Rx/Tx attempt number
-        uchar tmo_attempt;          //!< Number of attempts without reception
-        canOpenDictionary rxSDO;    //!< Received SDO
-        canOpenDictionary txSDO;    //!< SDO to be transmetted
-    }sdoRxTx; //!< Data structure controlling the Send and Reception process
-
-
-    /// Memory Block control
-    struct{
-        bool    rxblock;               //! The next reception is a block type
-        QByteArray txBlock;            //! < Tx data block sent
-        QByteArray rxBlock;            //! < Rx data block sent
-        uint    vector_index;          //! Index of the current data to be written in the nanoj memory
-        uint    num_block_items;       //! Counter of the total item currently in the block (max 1024)
-        uchar*   vector;
-        uint    sizeofNanoj;
-        bool    nanoj_program_started; //!< The Nanoj program has been activated
-    } nanojStr;
+        _NO_COMMAND=0,
+        _ZERO_SETTING_COMMAND,
+        _POSITIONING_COMMAND,
+    } _executionCommands;
+    _executionCommands execCommand;
 
     typedef struct{
         uchar digital_input_mask;    //!< Input mask to use digital inputs as safety
@@ -364,7 +327,21 @@ private:
 
     // Safety Handling
     _SafetyStructure safety; //!< Handles the safety of the activation
+    bool zero_setting_ok;//!< Flag of the zero setting completed
 
+    struct{
+        float gearratio;
+        float speed_denominator;
+    }motorConfig;
+
+
+    bool    changed = false;
+    bool    success = false;
+    unsigned short chk = 0;
+    clock_t     t1; //!> Time performance measurement variable
+
+    _CiA402Status getCiAStatus(canOpenDictionary* od);
+    QString getCiAStatusString(_CiA402Status status);
 
 private slots:
 

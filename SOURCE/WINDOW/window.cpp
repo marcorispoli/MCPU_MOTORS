@@ -16,8 +16,12 @@ debugWindow::debugWindow(QWidget *parent)
     connect(ui->logClearButton, SIGNAL(pressed()), this, SLOT(onLogClearButton()), Qt::UniqueConnection);
     connect(ui->debugClearButton, SIGNAL(pressed()), this, SLOT(onDebugClearButton()), Qt::UniqueConnection);
     connect(ui->logEnableCheck, SIGNAL(stateChanged(int)), this, SLOT(on_logEnableCheck_stateChanged(int)));
-    connect(ui->initButton, SIGNAL(pressed()), this, SLOT(onInitButton()), Qt::UniqueConnection);
+    connect(ui->trxInitButton, SIGNAL(pressed()), this, SLOT(onTrxInitButton()), Qt::UniqueConnection);
+    connect(ui->slideInitButton, SIGNAL(pressed()), this, SLOT(onSlideInitButton()), Qt::UniqueConnection);
 
+    connect(ui->BodyInitButton, SIGNAL(pressed()), this, SLOT(onBodyInitButton()), Qt::UniqueConnection);
+    connect(ui->CarmInitButton, SIGNAL(pressed()), this, SLOT(onCarmInitButton()), Qt::UniqueConnection);
+    connect(ui->MvertInitButton, SIGNAL(pressed()), this, SLOT(onMvertInitButton()), Qt::UniqueConnection);
 
     pollingTimer  = startTimer(500);
 
@@ -123,10 +127,31 @@ void debugWindow::debugMessageHandler(QtMsgType type, QString msg){
 
 }
 
-void debugWindow::onInitButton(void){
+void debugWindow::onTrxInitButton(void){
 
-    if(TRX->activateInitialization()) qDebug() << "INIT BUTTON ACCEPTED";
-    else qDebug() << "INIT BUTTON REJECTED";
+    if(TRX->activateInitialization()) qDebug() << "TRX INIT BUTTON ACCEPTED";
+    else qDebug() << "TRX INIT BUTTON REJECTED";
+};
+
+void debugWindow::onSlideInitButton(void){
+
+    if(SLIDE->activateInitialization()) qDebug() << "SLIDE INIT BUTTON ACCEPTED";
+    else qDebug() << "SLIDE INIT BUTTON REJECTED";
+};
+void debugWindow::onBodyInitButton(void){
+
+    if(BODY->activateInitialization()) qDebug() << "BODY INIT BUTTON ACCEPTED";
+    else qDebug() << "BODY INIT BUTTON REJECTED";
+};
+void debugWindow::onCarmInitButton(void){
+
+    if(CARM->activateInitialization()) qDebug() << "CARM INIT BUTTON ACCEPTED";
+    else qDebug() << "CARM INIT BUTTON REJECTED";
+};
+void debugWindow::onMvertInitButton(void){
+
+    if(MVERT->activateInitialization()) qDebug() << "MVERT INIT BUTTON ACCEPTED";
+    else qDebug() << "MVERT INIT BUTTON REJECTED";
 };
 
 void debugWindow::updateData(void){

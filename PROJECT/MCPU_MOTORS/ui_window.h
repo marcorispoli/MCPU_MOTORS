@@ -33,7 +33,11 @@ public:
     QLabel *label_16;
     QCheckBox *debugEnable;
     QLabel *label_17;
-    QPushButton *initButton;
+    QPushButton *trxInitButton;
+    QPushButton *slideInitButton;
+    QPushButton *BodyInitButton;
+    QPushButton *CarmInitButton;
+    QPushButton *MvertInitButton;
 
     void setupUi(QWidget *debugWindow)
     {
@@ -123,11 +127,43 @@ public:
 "border-width: 0px;\n"
 ""));
         label_17->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        initButton = new QPushButton(mainFrame);
-        initButton->setObjectName(QString::fromUtf8("initButton"));
-        initButton->setGeometry(QRect(400, 40, 121, 31));
-        initButton->setFont(font2);
-        initButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+        trxInitButton = new QPushButton(mainFrame);
+        trxInitButton->setObjectName(QString::fromUtf8("trxInitButton"));
+        trxInitButton->setGeometry(QRect(400, 40, 131, 31));
+        trxInitButton->setFont(font2);
+        trxInitButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+"color: rgb(255, 255, 255);\n"
+"border-width: 0px;\n"
+""));
+        slideInitButton = new QPushButton(mainFrame);
+        slideInitButton->setObjectName(QString::fromUtf8("slideInitButton"));
+        slideInitButton->setGeometry(QRect(400, 80, 131, 31));
+        slideInitButton->setFont(font2);
+        slideInitButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+"color: rgb(255, 255, 255);\n"
+"border-width: 0px;\n"
+""));
+        BodyInitButton = new QPushButton(mainFrame);
+        BodyInitButton->setObjectName(QString::fromUtf8("BodyInitButton"));
+        BodyInitButton->setGeometry(QRect(400, 120, 131, 31));
+        BodyInitButton->setFont(font2);
+        BodyInitButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+"color: rgb(255, 255, 255);\n"
+"border-width: 0px;\n"
+""));
+        CarmInitButton = new QPushButton(mainFrame);
+        CarmInitButton->setObjectName(QString::fromUtf8("CarmInitButton"));
+        CarmInitButton->setGeometry(QRect(400, 160, 131, 31));
+        CarmInitButton->setFont(font2);
+        CarmInitButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
+"color: rgb(255, 255, 255);\n"
+"border-width: 0px;\n"
+""));
+        MvertInitButton = new QPushButton(mainFrame);
+        MvertInitButton->setObjectName(QString::fromUtf8("MvertInitButton"));
+        MvertInitButton->setGeometry(QRect(400, 200, 131, 31));
+        MvertInitButton->setFont(font2);
+        MvertInitButton->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 127);\n"
 "color: rgb(255, 255, 255);\n"
 "border-width: 0px;\n"
 ""));
@@ -150,7 +186,11 @@ public:
         label_16->setText(QCoreApplication::translate("debugWindow", "DEBUG TEXT", nullptr));
         debugEnable->setText(QCoreApplication::translate("debugWindow", "ENABLE", nullptr));
         label_17->setText(QCoreApplication::translate("debugWindow", "CAN FRAMES", nullptr));
-        initButton->setText(QCoreApplication::translate("debugWindow", "INITIALIZE", nullptr));
+        trxInitButton->setText(QCoreApplication::translate("debugWindow", "TRX INITIALIZE", nullptr));
+        slideInitButton->setText(QCoreApplication::translate("debugWindow", "SLIDE INITIALIZE", nullptr));
+        BodyInitButton->setText(QCoreApplication::translate("debugWindow", "BODY INITIALIZE", nullptr));
+        CarmInitButton->setText(QCoreApplication::translate("debugWindow", "CARM INITIALIZE", nullptr));
+        MvertInitButton->setText(QCoreApplication::translate("debugWindow", "VERT INITIALIZE", nullptr));
     } // retranslateUi
 
 };

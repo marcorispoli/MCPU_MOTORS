@@ -25,10 +25,10 @@ ushort pd4Nanotec::initPd4ZeroSettingCommand(void){
     static bool success;
     static uint ctrlw;
 
-    switch(wStatus){
+    switch(cia_steps){
     case 0:
         // Upload Zero Setting registers
-        wStatus++;
+        cia_steps++;
         zero_setting_ok = false;
         return 1;
 
@@ -39,38 +39,38 @@ ushort pd4Nanotec::initPd4ZeroSettingCommand(void){
 
       if(!success){
           qDebug() << "DEVICE (" << deviceId << "): ZERO SETTING FAILED!";
-          wStatus = 200;
+          cia_steps = 200;
           return 1;
       }
 
-       wStatus++;
+       cia_steps++;
        return 1;
 
     case 2:
         // Upload Operating mode
         writeSDO(OD_6060_00,OD_6060_00_PROFILE_HOMING);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 3:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
-        wStatus++;
+        cia_steps++;
         return  1;
 
     case 4: // Read the Control Word
         readSDO(OD_6040_00);        
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 5: // Get the control word
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR READING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
@@ -79,18 +79,18 @@ ushort pd4Nanotec::initPd4ZeroSettingCommand(void){
         ctrlw &=~ OD_MASK(ZERO_SETTING_CTRL_INIT);
         ctrlw |= OD_VAL(ZERO_SETTING_CTRL_INIT);
 
-        wStatus++;
+        cia_steps++;
         return 1;
 
     case 6:
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 7:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
@@ -102,18 +102,18 @@ ushort pd4Nanotec::initPd4ZeroSettingCommand(void){
 
         ctrlw &=~ OD_MASK(ZERO_SETTING_CTRL_INIT);
         ctrlw |= OD_VAL(ZERO_SETTING_CTRL_INIT);
-        wStatus++;
+        cia_steps++;
         return 1;
 
    case 8:    
         writeSDO(OD_6040_00, ctrlw);
-        wStatus++;
+        cia_steps++;
         return 5;
 
     case 9:
         if(!sdoRxTx.sdo_rx_ok) {
             qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
-            wStatus = 200;
+            cia_steps = 200;
             return 1;
         }
 
@@ -152,16 +152,16 @@ ushort pd4Nanotec::pd4ZeroSettingLoop(){
         return 0;
     }
 
-    switch(wStatus){
+    switch(cia_steps){
         case 0:
             qDebug() << QString("DEVICE (%1): ZERO SETTING STARTED").arg(deviceId);
             memCtrl=0xFFFF;
-            wStatus++;
+            cia_steps++;
             return 1;
 
         case 1:// Read the Control Word
             readSDO(OD_6040_00);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 2: // Get the control word
@@ -173,12 +173,12 @@ ushort pd4Nanotec::pd4ZeroSettingLoop(){
             ctrlw = sdoRxTx.rxSDO.getVal();
             ctrlw &=~ OD_MASK(ZERO_SETTING_START);
             ctrlw |= OD_VAL(ZERO_SETTING_START);
-            wStatus++;
+            cia_steps++;
             return 1;
 
         case 3: // Set the BIT4 of Control Word to start the sequence
             writeSDO(OD_6040_00, ctrlw);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 4:
@@ -186,14 +186,14 @@ ushort pd4Nanotec::pd4ZeroSettingLoop(){
                 qDebug() << QString("DEVICE (%1): ERROR WRITING OD %2.%3").arg(deviceId).arg(sdoRxTx.txSDO.getIndex(),1,16).arg(sdoRxTx.txSDO.getSubIndex());
                 return 0;
             }
-            wStatus++;
+            cia_steps++;
             return 1;
 
         case 5: // Zero Setting Cycle loop ------------------------------------------------------------------
 
             // Read the Status Word to detect the command completion
             readSDO(OD_6041_00);
-            wStatus++;
+            cia_steps++;
             return 5;
 
         case 6:
@@ -204,7 +204,7 @@ ushort pd4Nanotec::pd4ZeroSettingLoop(){
 
 
             // Repeats the status read until the following conditions are met.
-            wStatus = 5;
+            cia_steps = 5;
 
             // Check the status register content
             val = sdoRxTx.rxSDO.getVal();

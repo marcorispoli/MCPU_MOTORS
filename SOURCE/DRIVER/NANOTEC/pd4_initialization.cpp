@@ -3,8 +3,14 @@
 
 
 bool pd4Nanotec::activateInitialization(void){
-    if(!pCan) return false;
-    if(device_workflow == _WORKFLOW_NOT_CONNECTED) return false;
+    if(!pCan){
+        qDebug() << "activateInitialization: NO PCAN POINTER AVAILABLE";
+        return false;
+    }
+    if(device_workflow == _WORKFLOW_NOT_CONNECTED){
+        qDebug() << "activateInitialization: DEVICE NOT CONNECTED";
+        return false;
+    }
     if(device_workflow == _WORKFLOW_INITIALIZATION) return true;
     if(request_initialization) return true;
 
@@ -38,45 +44,45 @@ typedef enum{
 }_workflowInitialize_t;
 
 ushort pd4Nanotec::workflowInitializeHandler(void){
-    static _workflowInitialize_t fase = _WF_INITIALIZE_INIT;
-    static bool changed = false;
-    static bool success = false;
+
     ushort delay;
     uint index;
-    static unsigned short chk = 0;
 
 
-    switch(fase){
+
+    switch((_workflowInitialize_t) workflow_steps){
     case _WF_INITIALIZE_INIT:
         deviceInitialized = false;
         qDebug() << "DEVICE (" << deviceId << ") INITIALIZATION";
-        fase = _WF_INITIALIZE_READ_USER_PARAM;
+        workflow_steps = _WF_INITIALIZE_READ_USER_PARAM;
         readSDO(RESET_USER_PARAM,10); // Read the reset user parameter
         return 5;
 
     case _WF_INITIALIZE_READ_USER_PARAM:
+
         if(!sdoRxTx.sdo_rx_ok){
             qDebug() << "DEVICE (" << deviceId << ") ERROR READING THE USER PARAM";
             break;
-        }
+        }        
 
         // If the device results in reset status restart the INIT workflow
-        if(sdoRxTx.rxSDO.getVal() == RESET_CODE){
-           fase = _WF_INITIALIZE_NANOJ_UPLOAD_INIT;
+        if((sdoRxTx.rxSDO.getVal() == RESET_CODE) || (sdoRxTx.rxSDO.getVal() == 0)){
+           workflow_steps = _WF_INITIALIZE_NANOJ_UPLOAD_INIT;
         }else{
-           fase = _WF_INITIALIZE_COMPLETED;
+           workflow_steps = _WF_INITIALIZE_COMPLETED;
         }
         return 1;
 
     case _WF_INITIALIZE_NANOJ_UPLOAD_INIT:
+        qDebug() << "VERIFY UPLOAD NANOJ";
         if(!nanojStr.vector){
             nanojUploaded = true;
-            fase = _WF_INITIALIZE_CONFIG_VECTOR_INIT;
+            workflow_steps = _WF_INITIALIZE_CONFIG_VECTOR_INIT;
             return 1;
         }
 
         qDebug() << "DEVICE (" << deviceId << ") UPLOADING NANOJ PROGRAM";
-        fase = _WF_INITIALIZE_NANOJ_UPLOAD_LOOP;
+        workflow_steps = _WF_INITIALIZE_NANOJ_UPLOAD_LOOP;
 
 
     case _WF_INITIALIZE_NANOJ_UPLOAD_LOOP:
@@ -88,16 +94,18 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
             break;
         }
 
-        fase = _WF_INITIALIZE_CONFIG_VECTOR_INIT;
+        workflow_steps = _WF_INITIALIZE_CONFIG_VECTOR_INIT;
         return 1;
 
     case _WF_INITIALIZE_CONFIG_VECTOR_INIT:
+        qDebug() << "VERIFY UPLOAD CONFIG VECTOR";
         if(registerVectors.configVector == nullptr){
-            fase = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
+            workflow_steps = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
             return 1;
         }
 
         // Calc the checksum of the vector to evaluate the reload in memory
+        qDebug() << "UPLOAD CONFIG VECTOR";
         index = 0;
         chk = 0;
         while(1){
@@ -106,7 +114,7 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         }
 
         readSDO(CONFIG_USER_PARAM,5);
-        fase =_WF_INITIALIZE_CONFIG_VECTOR_1;
+        workflow_steps =_WF_INITIALIZE_CONFIG_VECTOR_1;
         return 5;
 
     case  _WF_INITIALIZE_CONFIG_VECTOR_1:
@@ -118,13 +126,13 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         // Already uploaded
         if(sdoRxTx.rxSDO.getVal() == chk){
             changed = false;
-            fase = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
+            workflow_steps = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
             return 1;
         }
 
         changed = true;
         writeSDO(CONFIG_USER_PARAM,chk);
-        fase = _WF_INITIALIZE_CONFIG_VECTOR_2;
+        workflow_steps = _WF_INITIALIZE_CONFIG_VECTOR_2;
         return 100;
 
     case _WF_INITIALIZE_CONFIG_VECTOR_2:
@@ -135,16 +143,17 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
             qDebug() << "DEVICE (" << deviceId << "): FAILED UPLOADING CONFIG VECTOR!";
             break;
         }
-        fase = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
+        workflow_steps = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT;
         return 1;
 
     case _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_INIT:
+        qDebug() << "VERIFY UPLOAD RUNTIME VECTOR";
         if(registerVectors.runtimeVector == nullptr){
-            fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_INIT;
+            workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_INIT;
             return 1;
         }
-
-        fase = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_1;
+        qDebug() << "UPLOAD RUNTIME VECTOR";
+        workflow_steps = _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_1;
         return 1;
 
     case _WF_INITIALIZE_CONFIG_RUNTIME_VECTOR_1:
@@ -156,17 +165,19 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
             break;
         }
 
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_INIT;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_INIT;
         return 1;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_INIT:
+        qDebug() << "VERIFY PARAM STORE";
         if(!changed){
-            fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_9;
+            workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_9;
             return 1;
         }
+        qDebug() << "VERIFY PARAM STORING..";
 
         writeSDO(RESET_USER_PARAM, RESET_CODE); // Reset the user Param Reset Flag
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_1;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_1;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_1:
@@ -177,12 +188,12 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
 
         // Stores the Object Dictionary parameters
         writeSDO(OD_1010_01, OD_SAVE_CODE);
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_2;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_2;
         return 1000;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_2:
         readSDO(OD_1010_01);
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_4;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_4;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_4:
@@ -192,17 +203,17 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         }
 
         if(sdoRxTx.rxSDO.getVal() != 1){
-            fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_2;
+            workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_2;
             return 100;
         }
 
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_5;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_5;
         return 1;
 
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_5:
         writeSDO(SAVE_USER_PARAM, 1);
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_6;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_6;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_6:
@@ -211,12 +222,12 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
             break;
         }
 
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_7;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_7;
         return 1;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_7:
         readSDO(SAVE_USER_PARAM);
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_8;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_8;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_8:
@@ -226,16 +237,16 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         }
 
         if(sdoRxTx.rxSDO.getVal()!=0){
-            fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_7;
+            workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_7;
             return 100;
         }
 
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_9;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_9;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_9:
         writeSDO(RESET_USER_PARAM, 1); // Set to 1 the Reset Flag
-        fase = _WF_INITIALIZE_VERIFY_PARAM_STORE_10;
+        workflow_steps = _WF_INITIALIZE_VERIFY_PARAM_STORE_10;
         return 5;
 
     case _WF_INITIALIZE_VERIFY_PARAM_STORE_10:
@@ -245,7 +256,7 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         }
 
         qDebug() << "DEVICE (" << deviceId << "): INITIALIZATION COMPLETED " << sdoRxTx.rxSDO.getVal();
-        fase = _WF_INITIALIZE_COMPLETED;
+        workflow_steps = _WF_INITIALIZE_COMPLETED;
         return 1;
 
 
@@ -255,7 +266,7 @@ ushort pd4Nanotec::workflowInitializeHandler(void){
         break;
     }
 
-    fase = _WF_INITIALIZE_INIT;
+    workflow_steps = _WF_INITIALIZE_INIT;
     initializationCompleted(deviceInitialized);
     return 0;
 }
